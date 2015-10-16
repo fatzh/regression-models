@@ -7,7 +7,7 @@
 library('ggplot2')
 library('dplyr')
 library('tidyr')
-library('ggfortify')
+#library('ggfortify')
 
 ## ---- loadData
 data(mtcars)
@@ -42,6 +42,9 @@ g <- ggplot(data=mtcars, aes(x=am, y=mpg)) +
     ylab("MPG") +
     ggtitle("MPG by transmission")
 
+## ---- inference
+var(mtcars[mtcars$am == 'Automatic',]$mpg)
+var(mtcars[mtcars$am == 'Manual',]$mpg)
 
 ## ---- MTlm
 mdl.mar <- lm(mpg ~ am, data=mtcars)
@@ -51,7 +54,9 @@ summary(mdl.mar)
 mdl.opt = step(lm(data = mtcars, mpg ~ .),direction = "both")
 
 ## ---- plotDiagModelMarginal
-autoplot(mdl.mar, label.size = 3)
+#autoplot(mdl.mar, label.size = 3)
 
 ## ---- plotDiagModelOptimal
-autoplot(mdl.opt, label.size = 3)
+#autoplot(mdl.opt, label.size = 3)
+par(mfrow = c(2,2))
+plot(mdl.opt)

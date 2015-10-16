@@ -2,7 +2,7 @@
 title: "Regrssion models - Course Project"
 author: "Fabrice Tereszkiewciz"
 date: "16 Oct 2015"
-output: html_document
+output: pdf_document
 ---
 
 ```{r global_options, include=FALSE}
@@ -25,22 +25,34 @@ You work for Motor Trend, a magazine about the automobile industry. Looking at a
 
 ## Exploratory Analysis
 
-Let's look at a simple plot to see the difference in MPG per transmission type.
-
 ```{r}
 <<exploAnalysis>>
 ```
 
 The dataset contains 32 observations and 11 variables. 
 
-We can have a quick look at the MPG values by transmission type.
-
 ```{r, fig.height=4, fig.align='center'}
 <<exploplot>>
 g
 ```
 
-It looks like manual transmission increases the MPG value. 
+This plot shows the MPG values increasing for the manual transmissions.
+
+## Inference
+
+To first determin if the transmission has an impact on the MPG, let $H_{0}$ be the null hypothesis that it has no impact : $H_{0} : \mu _{auto} = \mu _{manual}$
+
+```{r}
+<<inference>>
+```
+
+The variance difference is not negligible, we will assume the 2 groups to have unequal variance for the T test.
+
+```{r}
+t.test(mpg ~ am, data=mtcars, paired=FALSE, var.equal=FALSE)
+```
+
+As the 95% interval is `[-11.28 -3.21]` doesn't contain 0 and the P-value is < 0.5, the hypothesis that the transmission is not important can be rejected.
 
 ## Regression
 
@@ -61,32 +73,22 @@ We can do a step search to find the most optimal model to fit the MPG value.
 summary(mdl.opt)
 ```
 
-So we can explain the MPG better if we also include the weight (`wt`), horse power (`hp`), and cylinder 16 and 8 (`cyl16`, `cyl18`) to our model. We can now say that a manual transmission increases the MPG by 1.81 holding all other variables constant.
+The MPG can be better explained by including the weight (`wt`), horse power (`hp`), and cylinder 16 and 8 (`cyl16`, `cyl18`) to the model. With this model, a manual transmission increases the MPG by 1.81 holding all other variables constant.
 
 ```{r}
 anova(mdl.mar, mdl.opt)
 ```
 
-Here we can see that the P value is highly significant, which confirms that the model `mdl.opt` is more accurate than the marginal model `mdl.mar`.
+The P-value is highly significant (almost 0), which confirms that the model `mdl.opt` is more accurate than the marginal model `mdl.mar`.
 
 ## Residuals and Diagnostics
 
-The plot is in appendix.
+The plots are in appendix :
 
-- the points and the line show no signs of correlation on the Residuals vs. Fitted plot.
-- the poitns follow the line on the Normal Q-Q plot, so we can assume the residuals are normally distributed.
-- the points are randomly distributed on the Scale-Location, so we can assume constant variance.
-- all the points are within the 0.5 bands of the Cook's disctance (NEED TO PLOT THIS !!).
-
-## Inference
-
-A simple t-test shows that the transmission is an important parameter.
-
-```{r}
-t.test(mpg ~ am, data = mtcars)
-```
-
-As the 95% interval doesn't contain 0, we can not reject the hypothesis that the transmission is not important.
+- there are no signs of correlation between the residuals and fitted values, which is good for a  in a homoscedastic linear model with normally distributed errors.
+- the QQ plot support normality of the residuals, as all points are close to the line.
+- the points look randomly distributed on the Scale-Location plot, so we can assume constant variance.
+- all the residuals are well away from the 0.5 Cook's distance, which doesn't indicate any proble with excessive leverage.
 
 # Appendix
 
