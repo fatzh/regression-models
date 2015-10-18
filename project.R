@@ -28,9 +28,6 @@ mtcars$am <- as.factor(mtcars$am)
 levels(mtcars$am) <- c("Automatic", "Manual")
 # convert variables to factor
 mtcars$vs <- as.factor(mtcars$vs)
-mtcars$cyl <- factor(mtcars$cyl)
-mtcars$gear <- factor(mtcars$gear)
-mtcars$carb <- factor(mtcars$carb)
 glimpse(mtcars)
 summary(mtcars[,'am'])
 
@@ -60,3 +57,7 @@ mdl.opt = step(lm(data = mtcars, mpg ~ .),direction = "both")
 #autoplot(mdl.opt, label.size = 3)
 par(mfrow = c(2,2))
 plot(mdl.opt)
+
+## ---- 95% interval mpg increase manual
+sumc <- summary(mdl.opt)$coefficients
+sumc[4,1] + c(-1, 1)*qt(.975, mdl.opt$df ) * sumc[4,2]
