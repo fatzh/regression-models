@@ -45,7 +45,7 @@ var(mtcars[mtcars$am == 'Manual',]$mpg)
 
 ## ---- MTlm
 mdl.mar <- lm(mpg ~ am, data=mtcars)
-summary(mdl.mar)
+summary(mdl.mar)$coef
 
 ## ----stepSearch
 mdl.opt = step(lm(data = mtcars, mpg ~ .),direction = "both")
@@ -54,10 +54,12 @@ mdl.opt = step(lm(data = mtcars, mpg ~ .),direction = "both")
 #autoplot(mdl.mar, label.size = 3)
 
 ## ---- plotDiagModelOptimal
-#autoplot(mdl.opt, label.size = 3)
-par(mfrow = c(2,2))
-plot(mdl.opt)
+par(mfrow = c(1,1))
+plot(mdl.opt, which=1)
+plot(mdl.opt, which=2)
+plot(mdl.opt, which=3)
+plot(mdl.opt, which=5)
 
-## ---- 95% interval mpg increase manual
+## ---- 95% mpg increase manual
 sumc <- summary(mdl.opt)$coefficients
 sumc[4,1] + c(-1, 1)*qt(.975, mdl.opt$df ) * sumc[4,2]

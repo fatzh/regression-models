@@ -1,8 +1,9 @@
 ---
-title: "Regrssion models - Course Project"
-author: "Fabrice Tereszkiewciz"
+title: "Regression models - Course Project"
+author: "Fabrice Tereszkiewicz"
 date: "16 Oct 2015"
 output: pdf_document
+graphics: yes
 ---
 
 ```{r global_options, include=FALSE}
@@ -10,7 +11,6 @@ library(knitr)
 read_chunk('./project.R')
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
-
 ```{r, include=FALSE}
 <<loadPackages>>
 <<loadData>>
@@ -18,51 +18,48 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 ## Introduction
 
-You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions.
+We work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, we are asked to explore the relationship between a set of variables and miles per gallon (MPG). More especially, we are interested in the impact of the transmission type on the MPG.
 
 ## Executive summary
 
+We were asked to look into the effect of the transmission type on the MPG for a dataset of vehicles. We have first conducted an exploration of the data and an inference analysis and we can confirm that the transmission has an impact. Then using linear regression and different models, we established that the MPG of a vehicle is mostly determined by the weight of the car, the 1/4 mile time and the transmission type. **We can conclude with 95% confidence that a manual transmission results in an increase of the MPG between 0.05 and 5.83.**
 
 ## Exploratory Analysis
 
-```{r}
+```{r, include=FALSE}
 <<exploAnalysis>>
 ```
 
-The dataset contains 32 observations and 11 variables. 
+The dataset contains 32 observations and 11 variables. 19 vehicles with automatic transmission and 13 with manual transmission.
 
-```{r, fig.height=4, fig.align='center'}
+```{r, fig.height=3, fig.width=4, fig.align='center', echo=FALSE}
 <<exploplot>>
 g
 ```
 
-This plot shows the MPG values increasing for the manual transmissions.
+This plot shows that the MPG values seem to be higher for the manual transmissions. To first determin if the transmission has an impact on the MPG, let $H_{0}$ be the null hypothesis that it has no impact : $H_{0} : \mu _{auto} = \mu _{manual}$
 
-## Inference
-
-To first determin if the transmission has an impact on the MPG, let $H_{0}$ be the null hypothesis that it has no impact : $H_{0} : \mu _{auto} = \mu _{manual}$
-
-```{r}
+```{r, include=FALSE}
 <<inference>>
 ```
 
-The variance difference is not negligible, we will assume the 2 groups to have unequal variance for the T test.
+The variance difference of the 2 groups is not negligible (`r round(var(mtcars[mtcars$am =='Automatic',]$mpg), 2)` for automatic cars versus `r round(var(mtcars[mtcars$am =='Manual',]$mpg), 2)` for manual cars), we will assume the 2 groups to have unequal variance for the T test. 
 
-```{r}
+```{r, include=FALSE}
 t.test(mpg ~ am, data=mtcars, paired=FALSE, var.equal=FALSE)
 ```
 
-As the 95% interval is `[-11.28 -3.21]` doesn't contain 0 and the P-value is < 0.5, the hypothesis that the transmission is not important can be rejected.
+As the 95% interval `[-11.28 -3.21]` doesn't contain 0 and the P-value (`r t.test(mpg ~ am, data=mtcars, paired=FALSE, var.equal=FALSE)$p.value`) is < 0.05, the hypothesis that the transmission is not important can be rejected.
 
 ## Regression
 
 We can try a marginal linear regression first to see the effect of the transmission type on MPG, holding all other variables constant.
 
-```{r}
+```{r, echo=FALSE}
 <<MTlm>>
 ```
 
-We can see that on average manual transmission vehicules can do 7.245 miles per gallon more than automatic transmission vehicules. Looking at the R-squared error, we can see that only `r round(summary(mdl.mar)$r.squared * 100, 2)`% of the variance in MPG is explained by the type of transmission. We must therefore look at other variables in order to explain the MPG change.
+We can see that on average manual transmission vehicules can do `r round(summary(mdl.mar)$coef[2,1], 3)` miles per gallon more than automatic transmission vehicules. The R-squared error shows that only `r round(summary(mdl.mar)$r.squared * 100, 2)`% of the variance in MPG is explained by the type of transmission. We must therefore look at other parameters in order to explain the MPG change.
 
 We can do a step search to find the most optimal model to fit the MPG value.
 
@@ -70,30 +67,50 @@ We can do a step search to find the most optimal model to fit the MPG value.
 <<stepSearch>>
 ```
 ```{r}
-summary(mdl.opt)
+summary(mdl.opt)$coef
 ```
 
-The MPG can be better explained by including the weight (`wt`), horse power (`hp`), and cylinder 16 and 8 (`cyl16`, `cyl18`) to the model. With this model, a manual transmission increases the MPG by 1.81 holding all other variables constant.
+The MPG can be better explained by including the weight (`wt`) and the 1/4 mile time (`qsec`) to the model. With this model, a manual transmission increases the MPG by `r round(summary(mdl.opt)$coef[4], 3)` on average holding all other variables constant.
 
 ```{r}
 anova(mdl.mar, mdl.opt)
 ```
 
-The P-value is highly significant (almost 0), which confirms that the model `mdl.opt` is more accurate than the marginal model `mdl.mar`.
+The P-value is significant (almost 0), which confirms that the model `mdl.opt` is more accurate than the marginal model `mdl.mar`.
 
 ## Residuals and Diagnostics
 
 The plots are in appendix :
 
-- there are no signs of correlation between the residuals and fitted values, which is good for a  in a homoscedastic linear model with normally distributed errors.
+- there are no signs of correlation between the residuals and fitted values, which is good for a homoscedastic linear model with normally distributed errors.
 - the QQ plot support normality of the residuals, as all points are close to the line.
 - the points look randomly distributed on the Scale-Location plot, so we can assume constant variance.
-- all the residuals are well away from the 0.5 Cook's distance, which doesn't indicate any proble with excessive leverage.
+- all the residuals are well away from the 0.5 Cook's distance, which doesn't indicate excessive leverage.
 
+## Inference
+
+A T-test on the transmission coefficient shows that with 95% confidence, the transmission is responsible for an increase in MPG between 0.05 and 5.83.
+
+```{r}
+<<95% mpg increase manual>>
+```
+\newpage
 # Appendix
 
-## Models diagnostic
+## Model residuals and diagnostic
 
-```{r, fig.width=10, fig.height=8}
-<<plotDiagModelOptimal>>
+```{r, fig.align='center', echo=FALSE}
+plot(mdl.opt, which=1)
+```
+
+```{r,fig.align='center', echo=FALSE}
+plot(mdl.opt, which=2)
+```
+
+```{r, fig.align='center', echo=FALSE}
+plot(mdl.opt, which=3)
+```
+
+```{r, fig.align='center', echo=FALSE}
+plot(mdl.opt, which=5)
 ```
